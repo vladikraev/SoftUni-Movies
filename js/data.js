@@ -1,4 +1,4 @@
-import { beginRequest, endRequest } from './notification.js'
+import { beginRequest, endRequest, showInfo } from './notification.js'
 
 function host(endpoint) {
     return `https://api.backendless.com/D0A045F9-53B0-D3B3-FFAF-D69BAD02C500/4E5EF24F-9B73-4631-BC50-AFE4F89EC308/${endpoint}`
@@ -84,7 +84,7 @@ export async function getMovies() {
     })).json()
 
     endRequest();
-    
+
     return result;
 }
 
@@ -165,10 +165,11 @@ export async function deleteMovie(id) {
 }
 
 // get movies by user ID
-export async function getMoviesByOwner(ownerId) {
+export async function getMoviesByOwner() {
     beginRequest();
 
-    const token = localStorage.getItem('userToken')
+    const token = localStorage.getItem('userToken');
+    const ownerId = localStorage.getItem('userId')
 
     const result = (await fetch(host(endpoints.MOVIES + `?where=ownerId%3D%27${ownerId}%27`), {
         headers: {
@@ -183,21 +184,9 @@ export async function getMoviesByOwner(ownerId) {
 }
 
 // buy tickets
-export async function buyTicket(id, updatedProps) {
-    beginRequest();
+export async function buyTicket(movie) {
+    const newTickets = movie.tickets - 1;
+    const movieId = movie.objectId;
 
-    const token = localStorage.getItem('userToken')
-    // await buyTicket('E5E615E7-D728-4DE7-9489-2273EDF8D87F', {tickets: (tickets--)})
-    const result = (await fetch(host(endpoints.MOVIE_BY_ID + id), {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-            'user-token': token
-        },
-        body: JSON.stringify(updatedProps)
-    })).json();
-
-    endRequest();
-
-    return result;
+    return updateMovie(movieId, { tickets: newTickets });
 }
